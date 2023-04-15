@@ -1,0 +1,6 @@
+#define IDI_NOTIFICATIONICON 207
+#define IDM_LOCK 101
+#define IDM_CLOSE 102
+#define IDM_EXIT 103
+#define IDM_ABOUT 104
+#define IDM_OPEN 105
