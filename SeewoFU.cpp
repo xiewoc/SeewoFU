@@ -3,50 +3,58 @@
 #include <conio.h> 
 #include <fstream>
 #include <shellapi.h>
-#include <tchar.h>
-#include <wchar.h>
 #include <strsafe.h>
 #include <commctrl.h>
+#include <wingdi.h>
+#include <thread>
 #include "res.h"
 
-#define WM_SHOWTASK (WM_USER+145)
+#define WM_SHOWTASK (WM_USER+114)
 #define IDR_PAUSE 12
 
-HMENU hmenu;//≤Àµ•æ‰±˙
+HMENU hmenu;//ËèúÂçïÂè•ÊüÑ
 
 using namespace std;
 
-void SSUL(LPSTR THREADNAME)
+void BSWLS()
 {
-STARTUPINFO si;
-PROCESS_INFORMATION pi;
-ZeroMemory(&si, sizeof(si));
-si.cb = sizeof(si);
-ZeroMemory(&pi, sizeof(pi));
-CreateProcess(TEXT(THREADNAME), NULL, NULL, NULL, false, 0, NULL, NULL, &si, &pi);
+	RECT rswls;
+	string fin;
+	HWND sw,swf;
+	while(fin!="1")
+		{
+		ifstream infile("temp.tmp",ios::in);
+		while(infile>>fin)
+		sw= FindWindow(NULL,"Â∏åÊ≤ÉÁÆ°ÂÆ∂");
+		swf= GetForegroundWindow(); 
+		if (sw!=0&&sw==swf){
+			GetClientRect(sw,&rswls);
+			if(rswls.right==1920&&rswls.bottom==1080){
+				SetWindowPos(sw,HWND_BOTTOM,0,0,0,0,SWP_HIDEWINDOW | SWP_NOOWNERZORDER);
+			}
+		}
+		Sleep(5000);
+		}
+	exit;
 }
 
 void FTSeewo()
 {
-	HWND sw=FindWindow(NULL,"œ£Œ÷π‹º“");
-	SetWindowPos(sw,HWND_TOP,0,0,0,0,SWP_SHOWWINDOW | SWP_NOOWNERZORDER);
+	HWND sw=FindWindow(NULL,"Â∏åÊ≤ÉÁÆ°ÂÆ∂");
+	RECT rsw;
+	GetClientRect(sw,&rsw);
+	if(rsw.right==1920&&rsw.bottom==1080){
+			SetWindowPos(sw,HWND_TOP,0,0,0,0,SWP_SHOWWINDOW | SWP_NOOWNERZORDER);
+	}
 } 
 
-void CSeewoUL()
+void BallonMsg(int MsgType,HWND hwnd,LPSTR INFOTITLETEXT,LPSTR INFOTEXT)//Ê∞îÊ≥°ÈÄöÁü• 
 {
-	HWND fcc =FindWindow("WindowClass","FCC");
-	PostMessage(fcc,WM_CLOSE,0,0);
-}
-
-void BallonMsg(int MsgType,HWND hwnd,LPSTR INFOTITLETEXT,LPSTR INFOTEXT)//∆¯≈›Õ®÷™ 
-{
-	//HINSTANCE hins =GetModuleHandle("cwd.exe"); 
 	NOTIFYICONDATAA nid = {};
 	nid.cbSize = sizeof(nid);
 	nid.hWnd = hwnd;
-	nid.uFlags = NIF_GUID | NIF_INFO;
+	nid.uFlags = NIF_MESSAGE | NIF_GUID | NIF_INFO;
 	nid.uCallbackMessage=WM_USER;
-	nid.hIcon = LoadIcon(NULL, MAKEINTRESOURCE(IDI_NOTIFICATIONICON)); 
 	StringCchCopyA(nid.szInfoTitle, ARRAYSIZE(nid.szInfoTitle),INFOTITLETEXT);
 	StringCchCopyA(nid.szInfo, ARRAYSIZE(nid.szInfo),INFOTEXT);
     nid.uTimeout=10000;
@@ -54,40 +62,40 @@ void BallonMsg(int MsgType,HWND hwnd,LPSTR INFOTITLETEXT,LPSTR INFOTEXT)//∆¯≈›Õ®
 	{
 		case 1:{
 			nid.dwInfoFlags=NIIF_INFO;
-			Shell_NotifyIcon(NIM_ADD, &nid);
+			Shell_NotifyIcon(NIM_MODIFY, &nid);
 			break;
 		}
 		case 2:{
 			nid.dwInfoFlags=NIIF_WARNING;
-			Shell_NotifyIcon(NIM_ADD, &nid);
+			Shell_NotifyIcon(NIM_MODIFY, &nid);
 			break;
 		}
 		case 3:{
 			nid.dwInfoFlags=NIIF_ERROR;
-			Shell_NotifyIcon(NIM_ADD, &nid);
+			Shell_NotifyIcon(NIM_MODIFY, &nid);
 			break;
 		}
 		case 4:{
 			nid.dwInfoFlags=NIIF_USER;
-			Shell_NotifyIcon(NIM_ADD, &nid);
+			Shell_NotifyIcon(NIM_MODIFY, &nid);
 			break;
 		}
 		default:{
 			nid.dwInfoFlags=NIIF_NONE | NIIF_NOSOUND;
-			Shell_NotifyIcon(NIM_ADD, &nid);
+			Shell_NotifyIcon(NIM_MODIFY, &nid);
 			break;
 		}
 	}
     
  } 
  
-void TrayWindowIcon(HWND hWnd,LPSTR TIPTEXT)//Õ–≈ÃÕº±Í 
+void TrayWindowIcon(HINSTANCE hInstance,HWND hWnd,LPSTR TIPTEXT)//ÊâòÁõòÂõæÊ†á 
  {
- 	//HINSTANCE hins =GetModuleHandle("cwd.exe"); 
+ 	HINSTANCE hins = hInstance; 
 	NOTIFYICONDATAA nid = {};
 	nid.hWnd = hWnd;
 	nid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE | NIF_GUID | NIF_INFO;
-	nid.hIcon =LoadIcon(NULL, IDI_ERROR); 
+	nid.hIcon =LoadIcon(hins, MAKEINTRESOURCE(IDI_NOTIFICATIONICON)); 
 	StringCchCopyA(nid.szTip, ARRAYSIZE(nid.szTip),TIPTEXT);
 	nid.uCallbackMessage=WM_USER;
 	Shell_NotifyIcon(NIM_ADD, &nid);
@@ -95,37 +103,47 @@ void TrayWindowIcon(HWND hWnd,LPSTR TIPTEXT)//Õ–≈ÃÕº±Í
  
 void OnTrayIcon(HWND hWnd,LPARAM lParam)
 {
-	POINT pt;//”√”⁄Ω” ’ Û±Í◊¯±Í
-	int menu_rtn;//”√”⁄Ω” ’≤Àµ•—°œÓ∑µªÿ÷µ
-	hmenu = CreatePopupMenu();//…˙≥…≤Àµ•
-	AppendMenu(hmenu, MF_STRING, IDM_LOCK, TEXT("À¯∆¡"));
-	AppendMenu(hmenu, MF_STRING, IDM_CLOSE, TEXT("πÿ±’SeewoUL"));
-	AppendMenu(hmenu, MF_STRING, IDM_OPEN , TEXT("¥Úø™SeewoUL"));
-	AppendMenu(hmenu, MF_STRING, IDM_EXIT, TEXT("ÕÀ≥ˆ¥À≥Ã–Ú"));
-	AppendMenu(hmenu, MF_STRING, IDM_ABOUT, TEXT("πÿ”⁄Œ“√«"));
+	POINT pt;//Áî®‰∫éÊé•Êî∂Èº†Ê†áÂùêÊ†á
+	MENUINFO mi;
+	HBRUSH MBGb;
+	int menu_rtn;//Áî®‰∫éÊé•Êî∂ËèúÂçïÈÄâÈ°πËøîÂõûÂÄº
+	hmenu = CreatePopupMenu();//ÁîüÊàêËèúÂçï
+	MBGb = CreateSolidBrush(RGB(183,183,183)); 
+	mi.cbSize = sizeof(MENUINFO);
+	mi.fMask = MIM_BACKGROUND | MIM_STYLE;
+	mi.dwStyle = MNS_NOCHECK | MNS_AUTODISMISS;
+	mi.hbrBack = MBGb;
+	SetMenuInfo(hmenu,&mi);
+	AppendMenu(hmenu, MF_STRING, IDM_LOCK, TEXT("ÈîÅÂ±è"));
+	AppendMenu(hmenu, MF_STRING, IDM_CLOSE, TEXT("ÂÖ≥Èó≠SeewoUL"));
+	AppendMenu(hmenu, MF_STRING, IDM_OPEN , TEXT("ÊâìÂºÄSeewoUL"));
+	AppendMenu(hmenu, MF_STRING, IDM_ABOUT, TEXT("ÂÖ≥‰∫éÊàë‰ª¨"));
+	AppendMenu(hmenu, MF_STRING, IDM_EXIT, TEXT("ÈÄÄÂá∫Ê≠§Á®ãÂ∫è"));
 	if (lParam == WM_RBUTTONDOWN||lParam == WM_LBUTTONDOWN)
 	{
-		GetCursorPos(&pt);//»° Û±Í◊¯±Í
+		GetCursorPos(&pt);//ÂèñÈº†Ê†áÂùêÊ†á
 		SetForegroundWindow(hWnd);
 		EnableMenuItem(hmenu, IDR_PAUSE, MF_GRAYED);
-		menu_rtn = TrackPopupMenu(hmenu, TPM_RETURNCMD, pt.x, pt.y, NULL, hWnd, NULL );//œ‘ æ≤Àµ•≤¢ªÒ»°—°œÓID
+		menu_rtn = TrackPopupMenu(hmenu, TPM_RETURNCMD, pt.x, pt.y, NULL, hWnd, NULL );//ÊòæÁ§∫ËèúÂçïÂπ∂Ëé∑ÂèñÈÄâÈ°πID
 		if (menu_rtn == IDM_LOCK){
 			FTSeewo();
-			BallonMsg(0,hWnd,"“—À¯∆¡"," ");
+			BallonMsg(0,hWnd,"Â∑≤ÈîÅÂ±è"," ");
 			}
 		if (menu_rtn == IDM_CLOSE){
-			CSeewoUL();
-			BallonMsg(0,hWnd,"“—πÿ±’SeewoUL"," ");}
+			ofstream outfile("temp.tmp",ios::ate|ios::out);
+			outfile<<"1";
+			BallonMsg(0,hWnd,"Â∑≤ÂÖ≥Èó≠SeewoUL"," ");}
 		if (menu_rtn == IDM_OPEN){
-			SSUL("FCC.exe");
-			BallonMsg(0,hWnd,"“—¥Úø™SeewoUL"," ");
+			ofstream outfile("temp.tmp",ios::ate|ios::out);
+			thread th1(BSWLS);
+			th1.detach();
+			BallonMsg(0,hWnd,"Â∑≤ÊâìÂºÄSeewoUL"," ");
 			}	
 		if (menu_rtn == IDM_ABOUT){
 			system("start http://43.139.35.247") ;
 			}
 		if (menu_rtn == IDM_EXIT){
-		    BallonMsg(0,hWnd,"SeewoFU“—ÕÀ≥ˆ"," ");
-		    CSeewoUL();
+		    BallonMsg(0,hWnd,"SeewoFUÂ∑≤ÈÄÄÂá∫"," ");
 		    Sleep(100);
 		    PostQuitMessage(0);
 			}
@@ -139,10 +157,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_DESTROY: 
 			PostQuitMessage(0);
 			break;
-		case WM_CREATE://¥∞ø⁄¥¥Ω® ±∫Úµƒœ˚œ¢
-			TrayWindowIcon(hwnd,"SeewoFU");
-			BallonMsg(0,hwnd,"SeewoFU“—≥…π¶∆Ù∂Ø","≤¢––∆Ù∂ØFCC.exe");
-			SSUL("FCC.exe");
+		case WM_CREATE://Á™óÂè£ÂàõÂª∫Êó∂ÂÄôÁöÑÊ∂àÊÅØ
 			break;
 		case WM_USER:
 			OnTrayIcon(hwnd, lParam);
@@ -160,12 +175,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	HWND hwnd; /* A 'HANDLE', hence the H, or a pointer to our window */
 	MSG msg; /* A temporary location for all messages */
 	
-	void TrayWindowIcon(HWND hWnd,LPSTR TIPTEXT); 
+	void TrayWindowIcon(HINSTANCE hInstance,HWND hWnd,LPSTR TIPTEXT); 
 	void OnTrayIcon(HWND hWnd,LPARAM lParam);
 	void BallonMsg(int MsgType,HWND hwnd,LPSTR INFOTITLETEXT,LPSTR INFOTEXT);
-	void SSUL(LPSTR THREADNAME);
-	void CSeewoUL();
 	void FTSeewo();
+	void BSWLS();
 
 	/* zero out the struct and set the stuff we want to modify */
 	memset(&wc,0,sizeof(wc));
@@ -185,12 +199,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return 0;
 	}
     
-    ifstream infile("EUC.bin",ios::in);//EUC»œ÷§ 
-	if(!infile) {
-    MessageBoxA(0,"∑«»œ÷§…Ë±∏,œﬁ÷∆ π”√±æ»Ìº˛°£","DOTS_CopyRight 2023",MB_TOPMOST|MB_SYSTEMMODAL|MB_ICONERROR);
-    Sleep(100);
-    PostQuitMessage(0);
-    }//Œ¥∑¢œ÷Œƒº˛
 	
 	hwnd = CreateWindowEx(WS_EX_CLIENTEDGE,"SFPWindowClass","SEEWOFU",WS_MINIMIZE|WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, /* x */
@@ -199,24 +207,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		50, /* height */
 		NULL,NULL,hInstance,NULL);
 		
-	string s;//¥¥Ω®¥Ê¥¢ ˝æ›”√±‰¡ø
-	while(infile>>s)// ‰»ÎŒƒº˛¡˜
-    if(s=="04FC711301F3C784D66955D98D399AFB"){
-	}
-	else{
-	MessageBoxA(0,"∑«»œ÷§…Ë±∏,œﬁ÷∆ π”√±æ»Ìº˛°£","DOTS_CopyRight 2023",MB_TOPMOST|MB_SYSTEMMODAL|MB_ICONERROR);
-	Sleep(1000);
-	PostQuitMessage(0);
-    } 	
+		TrayWindowIcon(hInstance,hwnd,"SeewoFU");
+		BallonMsg(0,hwnd,"SeewoFUÂ∑≤ÊàêÂäüÂêØÂä®"," ");
+		ofstream outfile("temp.tmp",ios::ate|ios::out);
+		thread th1(BSWLS);
+		th1.detach();
 
-	/*
-		This is the heart of our program where all input is processed and 
+	/*	This is the heart of our program where all input is processed and 
 		sent to WndProc. Note that GetMessage blocks code flow until it receives something, so
-		this loop will not produce unreasonably high CPU usage
-	*/
+		this loop will not produce unreasonably high CPU usage*/
 	while(GetMessage(&msg, NULL, 0, 0) > 0) { /* If no error is received... */
 		TranslateMessage(&msg); /* Translate key codes to chars if present */
 		DispatchMessage(&msg); /* Send it to WndProc */
 	}
 	return msg.wParam;
 }
+      
