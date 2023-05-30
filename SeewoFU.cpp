@@ -5,7 +5,6 @@
 #include <shellapi.h>
 #include <strsafe.h>
 #include <commctrl.h>
-#include <wingdi.h>
 #include <thread>
 #include "res.h"
 
@@ -16,37 +15,23 @@ HMENU hmenu;//菜单句柄
 
 using namespace std;
 
+RECT rswls;
+HWND sw,swf;
+
 void BSWLS()
 {
-	RECT rswls;
-	string fin;
-	HWND sw,swf;
-	while(fin!="1")
-		{
-		ifstream infile("temp.tmp",ios::in);
-		while(infile>>fin)
+	while(1){
 		sw= FindWindow(NULL,"希沃管家");
 		swf= GetForegroundWindow(); 
-		if (sw!=0&&sw==swf){
-			GetClientRect(sw,&rswls);
-			if(rswls.right==1920&&rswls.bottom==1080){
-				SetWindowPos(sw,HWND_BOTTOM,0,0,0,0,SWP_HIDEWINDOW | SWP_NOOWNERZORDER);
+			if (sw!=0&&sw==swf){
+				GetClientRect(sw,&rswls);
+				if(rswls.right==1920&&rswls.bottom==1080){
+					SetWindowPos(sw,HWND_BOTTOM,0,0,0,0,SWP_HIDEWINDOW | SWP_NOOWNERZORDER);
+				}
 			}
+		Sleep(1000);
 		}
-		Sleep(5000);
-		}
-	exit;
 }
-
-void FTSeewo()
-{
-	HWND sw=FindWindow(NULL,"希沃管家");
-	RECT rsw;
-	GetClientRect(sw,&rsw);
-	if(rsw.right==1920&&rsw.bottom==1080){
-			SetWindowPos(sw,HWND_TOP,0,0,0,0,SWP_SHOWWINDOW | SWP_NOOWNERZORDER);
-	}
-} 
 
 void BallonMsg(int MsgType,HWND hwnd,LPSTR INFOTITLETEXT,LPSTR INFOTEXT)//气泡通知 
 {
@@ -108,15 +93,12 @@ void OnTrayIcon(HWND hWnd,LPARAM lParam)
 	HBRUSH MBGb;
 	int menu_rtn;//用于接收菜单选项返回值
 	hmenu = CreatePopupMenu();//生成菜单
-	MBGb = CreateSolidBrush(RGB(183,183,183)); 
+	MBGb = CreateSolidBrush(RGB(225,225,225)); 
 	mi.cbSize = sizeof(MENUINFO);
 	mi.fMask = MIM_BACKGROUND | MIM_STYLE;
 	mi.dwStyle = MNS_NOCHECK | MNS_AUTODISMISS;
 	mi.hbrBack = MBGb;
 	SetMenuInfo(hmenu,&mi);
-	AppendMenu(hmenu, MF_STRING, IDM_LOCK, TEXT("锁屏"));
-	AppendMenu(hmenu, MF_STRING, IDM_CLOSE, TEXT("关闭SeewoUL"));
-	AppendMenu(hmenu, MF_STRING, IDM_OPEN , TEXT("打开SeewoUL"));
 	AppendMenu(hmenu, MF_STRING, IDM_ABOUT, TEXT("关于我们"));
 	AppendMenu(hmenu, MF_STRING, IDM_EXIT, TEXT("退出此程序"));
 	if (lParam == WM_RBUTTONDOWN||lParam == WM_LBUTTONDOWN)
@@ -125,20 +107,6 @@ void OnTrayIcon(HWND hWnd,LPARAM lParam)
 		SetForegroundWindow(hWnd);
 		EnableMenuItem(hmenu, IDR_PAUSE, MF_GRAYED);
 		menu_rtn = TrackPopupMenu(hmenu, TPM_RETURNCMD, pt.x, pt.y, NULL, hWnd, NULL );//显示菜单并获取选项ID
-		if (menu_rtn == IDM_LOCK){
-			FTSeewo();
-			BallonMsg(0,hWnd,"已锁屏"," ");
-			}
-		if (menu_rtn == IDM_CLOSE){
-			ofstream outfile("temp.tmp",ios::ate|ios::out);
-			outfile<<"1";
-			BallonMsg(0,hWnd,"已关闭SeewoUL"," ");}
-		if (menu_rtn == IDM_OPEN){
-			ofstream outfile("temp.tmp",ios::ate|ios::out);
-			thread th1(BSWLS);
-			th1.detach();
-			BallonMsg(0,hWnd,"已打开SeewoUL"," ");
-			}	
 		if (menu_rtn == IDM_ABOUT){
 			system("start http://43.139.35.247") ;
 			}
@@ -149,6 +117,25 @@ void OnTrayIcon(HWND hWnd,LPARAM lParam)
 			}
 	}
 }
+/*CMenu *pMenu=GetMenu();//获取对话框关联菜单
+ for(int i=0;i<3;i++)
+ {
+     CBitmap bmp;
+     bmp.LoadBitmap(IDB_BITMAP1+i);
+  pSubMenu->SetMenuItemBitmaps(i,MF_BYPOSITION,&bmp,&bmp);
+  bmp.Detach();
+ }
+ CBitmap bmp;
+ CBrush m_BKBrush;
+ bmp.LoadBitmap(IDB_MENUBACK);
+ m_BKBrush.CreatePatternBrush(&bmp);//创建位图画刷
+ MENUINFO mnInfo;
+ memset(&mnInfo,0,sizeof(MENUINFO));
+ mnInfo.cbSize=sizeof(MENUINFO);
+ mnInfo.fMask=MIM_BACKGROUND;
+ mnInfo.hbrBack=m_BKBrush;
+ ::SetMenuInfo(pSubMenu->m_hMenu,&mnInfo);
+    m_BKBrush.Detach();*/ 
 
 /* This is where all the input to the window goes to */
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -156,8 +143,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		/* Upon destruction, tell the main thread to stop */
 		case WM_DESTROY: 
 			PostQuitMessage(0);
-			break;
-		case WM_CREATE://窗口创建时候的消息
 			break;
 		case WM_USER:
 			OnTrayIcon(hwnd, lParam);
@@ -178,7 +163,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	void TrayWindowIcon(HINSTANCE hInstance,HWND hWnd,LPSTR TIPTEXT); 
 	void OnTrayIcon(HWND hWnd,LPARAM lParam);
 	void BallonMsg(int MsgType,HWND hwnd,LPSTR INFOTITLETEXT,LPSTR INFOTEXT);
-	void FTSeewo();
 	void BSWLS();
 
 	/* zero out the struct and set the stuff we want to modify */
@@ -209,7 +193,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		
 		TrayWindowIcon(hInstance,hwnd,"SeewoFU");
 		BallonMsg(0,hwnd,"SeewoFU已成功启动"," ");
-		ofstream outfile("temp.tmp",ios::ate|ios::out);
+		//system("attrib temp.tmp +h");
 		thread th1(BSWLS);
 		th1.detach();
 
@@ -222,4 +206,3 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	return msg.wParam;
 }
-      
