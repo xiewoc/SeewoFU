@@ -117,26 +117,6 @@ void OnTrayIcon(HWND hWnd,LPARAM lParam)
 			}
 	}
 }
-/*CMenu *pMenu=GetMenu();//获取对话框关联菜单
- for(int i=0;i<3;i++)
- {
-     CBitmap bmp;
-     bmp.LoadBitmap(IDB_BITMAP1+i);
-  pSubMenu->SetMenuItemBitmaps(i,MF_BYPOSITION,&bmp,&bmp);
-  bmp.Detach();
- }
- CBitmap bmp;
- CBrush m_BKBrush;
- bmp.LoadBitmap(IDB_MENUBACK);
- m_BKBrush.CreatePatternBrush(&bmp);//创建位图画刷
- MENUINFO mnInfo;
- memset(&mnInfo,0,sizeof(MENUINFO));
- mnInfo.cbSize=sizeof(MENUINFO);
- mnInfo.fMask=MIM_BACKGROUND;
- mnInfo.hbrBack=m_BKBrush;
- ::SetMenuInfo(pSubMenu->m_hMenu,&mnInfo);
-    m_BKBrush.Detach();*/ 
-
 /* This is where all the input to the window goes to */
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	switch(Message) {
