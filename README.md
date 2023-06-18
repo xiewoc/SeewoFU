@@ -1,4 +1,15 @@
 # SeewoFU
 希沃管家锁屏破解程序
-使用DevCpp作为编译器，项目文件为SeewoFU.dev并包含其拓展（#include）
-Using DevCpp as the IDE envirnment ，use SeewoFU as the project file，including its extensions。
+使用DevCpp作为编译器，项目文件为SeewoFU.dev并包含其拓展
+
+发行说明（1.2/1.3）：
+新：
+1.菜单背景（
+HBITMAP hbmp = (HBITMAP)LoadImageA(NULL,"bg.bmp",IMAGE_BITMAP,AcPX,AcPY,LR_LOADFROMFILE|LR_DEFAULTSIZE|LR_CREATEDIBSECTION);）
+2.解锁更精准（
+int cx = GetSystemMetrics(SM_CXSCREEN);   
+int cy = GetSystemMetrics(SM_CYSCREEN);）
+3.解决了一些已知问题（腾讯化
+未解决：
+1.在某些更新版本的机子上不能解锁（基本上是“新建图层”了
+2.没能将BITMAP放入.rc中
