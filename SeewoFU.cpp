@@ -1,36 +1,52 @@
 #include <iostream>
 #include <windows.h>
 #include <conio.h> 
-#include <fstream>
 #include <shellapi.h>
 #include <strsafe.h>
 #include <commctrl.h>
 #include <thread>
-#include "res.h"
+#include "Resource.h"
 
 #define WM_SHOWTASK (WM_USER+114)
 #define IDR_PAUSE 12
-
-HMENU hmenu;//菜单句柄
 
 using namespace std;
 
 RECT rswls;
 HWND sw,swf;
 
-void BSWLS()
+void SetMsgBoxPos()
 {
 	while(1){
+	int cx = GetSystemMetrics(SM_CXSCREEN);   
+	int cy = GetSystemMetrics(SM_CYSCREEN);
+	int ActualPosX = cx*1689/1920;
+	int ActualPosY = cy*777/1080;
+	HWND HMsgBox = FindWindow("#32770","Info");
+		if (HMsgBox!=0){
+			SetWindowPos(HMsgBox,HWND_TOPMOST,ActualPosX,ActualPosY,241,153,SWP_SHOWWINDOW);
+		}
+	Sleep(100);
+	}
+}
+void UnlockLockScreen()
+{
+	while(1){
+		int cx = GetSystemMetrics(SM_CXSCREEN);   
+		int cy = GetSystemMetrics(SM_CYSCREEN);
 		sw= FindWindow(NULL,"希沃管家");
 		swf= GetForegroundWindow(); 
 			if (sw!=0&&sw==swf){
 				GetClientRect(sw,&rswls);
-				if(rswls.right==1920&&rswls.bottom==1080){
-					SetWindowPos(sw,HWND_BOTTOM,0,0,0,0,SWP_HIDEWINDOW | SWP_NOOWNERZORDER);
+				if(rswls.right==cx&&rswls.bottom==cy){
+					int MsgResult = MessageBoxA(NULL,"确定关闭？","Info",MB_YESNO);
+					if(MsgResult==6){
+						SetWindowPos(sw,HWND_BOTTOM,0,0,0,0,SWP_HIDEWINDOW | SWP_NOOWNERZORDER);
+					}
 				}
 			}
-		Sleep(1000);
-		}
+		Sleep(100);
+	}
 }
 
 void BallonMsg(int MsgType,HWND hwnd,LPSTR INFOTITLETEXT,LPSTR INFOTEXT)//气泡通知 
@@ -90,17 +106,20 @@ void OnTrayIcon(HWND hWnd,LPARAM lParam)
 {
 	POINT pt;//用于接收鼠标坐标
 	MENUINFO mi;
-	HBRUSH MBGb;
 	int menu_rtn;//用于接收菜单选项返回值
-	hmenu = CreatePopupMenu();//生成菜单
-	MBGb = CreateSolidBrush(RGB(225,225,225)); 
+	HMENU hmenu = CreatePopupMenu();//生成菜单
+	int cx = GetSystemMetrics(SM_CXSCREEN);   
+	int cy = GetSystemMetrics(SM_CYSCREEN);
+	int AcPX = cx*109/1920;
+	int AcPY = cy*39/1080;
+	HBITMAP hbmp = (HBITMAP)LoadImageA(NULL,"bg.bmp",IMAGE_BITMAP,AcPX,AcPY,LR_LOADFROMFILE|LR_DEFAULTSIZE|LR_CREATEDIBSECTION);
 	mi.cbSize = sizeof(MENUINFO);
 	mi.fMask = MIM_BACKGROUND | MIM_STYLE;
 	mi.dwStyle = MNS_NOCHECK | MNS_AUTODISMISS;
-	mi.hbrBack = MBGb;
+	mi.hbrBack = CreatePatternBrush(hbmp);
 	SetMenuInfo(hmenu,&mi);
-	AppendMenu(hmenu, MF_STRING, IDM_ABOUT, TEXT("关于我们"));
-	AppendMenu(hmenu, MF_STRING, IDM_EXIT, TEXT("退出此程序"));
+	AppendMenu(hmenu, MF_STRING, IDM_ABOUT, "关于我们");
+	AppendMenu(hmenu, MF_STRING, IDM_EXIT, "退出");
 	if (lParam == WM_RBUTTONDOWN||lParam == WM_LBUTTONDOWN)
 	{
 		GetCursorPos(&pt);//取鼠标坐标
@@ -108,7 +127,7 @@ void OnTrayIcon(HWND hWnd,LPARAM lParam)
 		EnableMenuItem(hmenu, IDR_PAUSE, MF_GRAYED);
 		menu_rtn = TrackPopupMenu(hmenu, TPM_RETURNCMD, pt.x, pt.y, NULL, hWnd, NULL );//显示菜单并获取选项ID
 		if (menu_rtn == IDM_ABOUT){
-			system("start http://43.139.35.247") ;
+			system("start http://43.139.35.247");
 			}
 		if (menu_rtn == IDM_EXIT){
 		    BallonMsg(0,hWnd,"SeewoFU已退出"," ");
@@ -117,16 +136,20 @@ void OnTrayIcon(HWND hWnd,LPARAM lParam)
 			}
 	}
 }
+
 /* This is where all the input to the window goes to */
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	switch(Message) {
+		
 		/* Upon destruction, tell the main thread to stop */
-		case WM_DESTROY: 
+		case WM_DESTROY: {
 			PostQuitMessage(0);
 			break;
-		case WM_USER:
+		}
+		case WM_USER:{
 			OnTrayIcon(hwnd, lParam);
 			break;
+		}
 		/* All other messages (a lot of them) are processed using default procedures */
 		default:
 			return DefWindowProc(hwnd, Message, wParam, lParam);
@@ -139,22 +162,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	WNDCLASSEX wc; /* A properties struct of our window */
 	HWND hwnd; /* A 'HANDLE', hence the H, or a pointer to our window */
 	MSG msg; /* A temporary location for all messages */
-	
+
 	void TrayWindowIcon(HINSTANCE hInstance,HWND hWnd,LPSTR TIPTEXT); 
 	void OnTrayIcon(HWND hWnd,LPARAM lParam);
 	void BallonMsg(int MsgType,HWND hwnd,LPSTR INFOTITLETEXT,LPSTR INFOTEXT);
-	void BSWLS();
-
+	void UnlockLockScreen();
+	void SetMsgBoxPos();
+	
 	/* zero out the struct and set the stuff we want to modify */
 	memset(&wc,0,sizeof(wc));
 	wc.cbSize		 = sizeof(WNDCLASSEX);
 	wc.lpfnWndProc	 = WndProc; /* This is where we will send messages to */
 	wc.hInstance	 = hInstance;
-	wc.hCursor		 = LoadCursor(NULL, IDC_CROSS);
+	wc.hCursor		 = LoadCursor(NULL, IDC_ARROW);
 	
 	/* White, COLOR_WINDOW is just a #define for a system color, try Ctrl+Clicking it */
-	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+5);
-	wc.lpszClassName = "SFPWindowClass";
+	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+	wc.lpszClassName = "WindowClass";
 	wc.hIcon		 = LoadIcon(NULL, IDI_APPLICATION); /* Load a standard icon */
 	wc.hIconSm		 = LoadIcon(NULL, IDI_APPLICATION); /* use the name "A" to use the project icon */
 
@@ -162,24 +186,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		MessageBox(NULL, "Window Registration Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
 		return 0;
 	}
-    
-	
-	hwnd = CreateWindowEx(WS_EX_CLIENTEDGE,"SFPWindowClass","SEEWOFU",WS_MINIMIZE|WS_OVERLAPPEDWINDOW,
+
+	hwnd = CreateWindowEx(WS_EX_CLIENTEDGE,"WindowClass","SeewoFU",WS_MINIMIZE|WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, /* x */
 		CW_USEDEFAULT, /* y */
-		100, /* width */
-		50, /* height */
+		64, /* width */
+		48, /* height */
 		NULL,NULL,hInstance,NULL);
-		
+
+	if(hwnd == NULL) {
+		MessageBox(NULL, "Window Creation Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
+		return 0;
+	}
 		TrayWindowIcon(hInstance,hwnd,"SeewoFU");
 		BallonMsg(0,hwnd,"SeewoFU已成功启动"," ");
-		//system("attrib temp.tmp +h");
-		thread th1(BSWLS);
+		thread th1(UnlockLockScreen);
 		th1.detach();
+		thread th2(SetMsgBoxPos);
+		th2.detach();
 
-	/*	This is the heart of our program where all input is processed and 
+	/*
+		This is the heart of our program where all input is processed and 
 		sent to WndProc. Note that GetMessage blocks code flow until it receives something, so
-		this loop will not produce unreasonably high CPU usage*/
+		this loop will not produce unreasonably high CPU usage
+	*/
 	while(GetMessage(&msg, NULL, 0, 0) > 0) { /* If no error is received... */
 		TranslateMessage(&msg); /* Translate key codes to chars if present */
 		DispatchMessage(&msg); /* Send it to WndProc */
