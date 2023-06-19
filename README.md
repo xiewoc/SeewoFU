@@ -4,12 +4,17 @@
 
 发行说明（1.2/1.3）：
 新：
+
 1.菜单背景（
-HBITMAP hbmp = (HBITMAP)LoadImageA(NULL,"bg.bmp",IMAGE_BITMAP,AcPX,AcPY,LR_LOADFROMFILE|LR_DEFAULTSIZE|LR_CREATEDIBSECTION);）
+HBITMAP hbmp = (HBITMAP)LoadImageA(NULL,"bg.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE|LR_DEFAULTSIZE|LR_CREATEDIBSECTION);）
+
 2.解锁更精准（
 int cx = GetSystemMetrics(SM_CXSCREEN);   
 int cy = GetSystemMetrics(SM_CYSCREEN);）
+
 3.解决了一些已知问题（腾讯化
 未解决：
+
 1.在某些更新版本的机子上不能解锁（基本上是“新建图层”了
-2.没能将BITMAP放入.rc中
+
+2.没能将BITMAP放入.rc中和菜单背景大小兼容的问题（win11上要比win10大）
