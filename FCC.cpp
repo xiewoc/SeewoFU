@@ -4,7 +4,7 @@
 int main()
 {
 	RECT rsw;//定义结构 
-	HWND cmd =FindWindow("ConsoleWindowClass",NULL);找cmd窗口
+	HWND cmd =FindWindow("ConsoleWindowClass",NULL);//找cmd窗口
 	SetWindowPos(cmd,HWND_BOTTOM,0,0,0,0,SWP_HIDEWINDOW | SWP_NOOWNERZORDER);//隐藏窗口 
 		while(1)
 		{
