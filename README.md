@@ -18,3 +18,6 @@ int cy = GetSystemMetrics(SM_CYSCREEN);）
 1.在某些更新版本的机子上不能解锁（基本上是“新建图层”了
 
 2.没能将BITMAP放入.rc中和菜单背景大小兼容的问题（win11上要比win10大）
+
+
+FCC 差不多就停更了，后面可能会再更，以后吧
