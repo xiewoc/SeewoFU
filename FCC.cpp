@@ -3,7 +3,7 @@
 
 int main()
 {
-	RECT rsw;//定义结构 
+	RECT rswls;//定义结构 
 	HWND cmd =FindWindow("ConsoleWindowClass",NULL);//找cmd窗口
 	SetWindowPos(cmd,HWND_BOTTOM,0,0,0,0,SWP_HIDEWINDOW | SWP_NOOWNERZORDER);//隐藏窗口 
 		while(1)
@@ -13,7 +13,7 @@ int main()
 			HWND sw=FindWindow(NULL,"希沃管家");//找同名窗口 
 			HWND swf =GetForegroundWindow(); //找顶置 
 				if (sw!=0&&sw==swf){//顶置窗口等于找的窗口（有时需点击锁屏窗口）
-					GetClientRect(sw,&rsw);//查窗口大小 
+					GetClientRect(sw,&rswls);//查窗口大小 
 					if(rswls.right==cx&&rswls.bottom==cy){//如果大小等于屏幕大小（锁屏覆盖整块屏幕）
 						SetWindowPos(sw,HWND_BOTTOM,0,0,0,0,SWP_HIDEWINDOW | SWP_NOOWNERZORDER);//隐藏窗口 
 					}
