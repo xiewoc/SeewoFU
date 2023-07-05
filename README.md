@@ -1,9 +1,11 @@
 # SeewoFU
 
 希沃管家锁屏破解程序
-使用DevCpp作为编译器，项目文件为SeewoFU.dev并包含其拓展
-(FCC为SeewoFU的精简版)
+
+使用DevCpp作为编译器，项目文件为SeewoFU.dev并包含其拓展(FCC为SeewoFU的精简版)
+
 发行说明（1.2/1.3）：
+
 新：
 
 1.菜单背景（
