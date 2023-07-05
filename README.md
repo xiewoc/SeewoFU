@@ -13,6 +13,7 @@ int cx = GetSystemMetrics(SM_CXSCREEN);
 int cy = GetSystemMetrics(SM_CYSCREEN);）
 
 3.解决了一些已知问题（腾讯化
+
 未解决：
 
 1.在某些更新版本的机子上不能解锁（基本上是“新建图层”了
