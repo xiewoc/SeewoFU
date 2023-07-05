@@ -1,4 +1,5 @@
 # SeewoFU
+
 希沃管家锁屏破解程序
 使用DevCpp作为编译器，项目文件为SeewoFU.dev并包含其拓展
 (FCC为SeewoFU的精简版)
@@ -16,7 +17,7 @@ int cy = GetSystemMetrics(SM_CYSCREEN);）
 
 未解决：
 
-1.在某些更新版本的机子上不能解锁（基本上是“新建图层”了
+1.在某些更新版本的机子上不能解锁（有保护并且被设为了顶置一切窗口（包括了被TOPMOST的窗口）
 
 2.没能将BITMAP放入.rc中和菜单背景大小兼容的问题（win11上要比win10大）
 
