@@ -31,3 +31,5 @@ int cy = GetSystemMetrics(SM_CYSCREEN);）
 
 
 FCC 差不多就停更了，后面可能会再更，以后吧
+
+如果为了稳妥还是建议先用FCC，因为SeewoFU是pre-relsease
