@@ -1,0 +1,7 @@
+#include "Resource-user.h"
+
+IDI_NOTIFICATIONICON       ICON         "1.ico"
+IDI_ICON     			   ICON         "favicon.ico"
+IDB_BG					   BITMAP       "bbg.bmp"
+IDB_BG1					   BITMAP       "bg.bmp"
+//IDW_WAVE1				   WAVE	  		"Clear-Sky-Still-Alive.wav"
